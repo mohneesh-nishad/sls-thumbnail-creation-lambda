@@ -1,0 +1,1 @@
+# sls-thumbnail-creation-lambda

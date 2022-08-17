@@ -1,0 +1,55 @@
+service: dev-xana-image-resize
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stackName: xana-image-resize
+  # you can overwrite defaults here
+  stage: dev
+  region: us-east-1
+  # below line is for making apiEndpoints accept data as multipart
+  # apiGateway:
+  #   binaryMediaTypes:
+  #     - 'multipart/form-data'
+
+  iam:
+    role: arn:aws:iam::845847047647:role/mohneesh-transcoder-role-for-lambda
+
+  # you can define service wide environment variables here
+  environment:
+    #    variable1: value1
+    ACCESS_KEY_ID: AKIA4J4DJVXPY3ZJFXNS
+    ACCESS_SECRET: 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
+# you can add packaging information here
+package:
+  #  individually: true
+  excludeDevDependencies: true
+  patterns:
+    - "handler.js"
+    - "!node_modules/**"
+    - "!*.json"
+  #    - '!exclude-me-dir/**'
+  #    - include-me.js
+  #    - include-me-dir/**
+
+functions:
+  dev-xana-create-thumbnail:
+    handler: handler.main
+    events:
+      - sqs:
+          arn: arn:aws:sqs:us-east-1:845847047647:dev-xana-resizeImages
+
+    layers:
+      - { Ref: CommonLibs14LambdaLayer }
+    environment:
+      ACCESSKEYID: AKIA4J4DJVXPY3ZJFXNS
+      SECRETACCESSKEY: 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
+    package:
+      individually: true
+
+layers:
+  commonLibs14:
+    path: layer
+    compatibleRuntimes:
+      - nodejs14.x
