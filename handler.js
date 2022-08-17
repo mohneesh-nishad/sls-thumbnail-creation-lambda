@@ -11,12 +11,28 @@ aws.config.update({
 
 const s3 = new aws.S3()
 
-async function createSharpThumb(blob) {
+async function createJpegThumb(blob, quality) {
+    console.log('jpeg thumb creator called');
     const img = await sharp(blob)
-        .resize({ width: 200, height: 200 })
-        .png({ progressive: true, quality: 80 })
+        // .resize({ width: 512, height: 512 })
+        .jpeg({ progressive: true, quality: quality, mozjpeg: true })
+        .toBuffer({ resolveWithObject: true })
+    return img
+}
+
+async function createWebpThumb(blob) {
+    const img = await sharp(blob, { animated: true })
+        .resize({ width: 512, height: 512 })
+        .webp({ lossless: true })
         .toBuffer()
     return img
+}
+
+async function createPngThumb(blob, quality) {
+    console.log('PNG thumb creator called');
+    const thumb = await sharp(blob).withMetadata()
+        .png({ quality: quality, compressionLevel: 9, force: false, effort: 10 }).toBuffer({ resolveWithObject: true })
+    return thumb;
 }
 
 
@@ -27,17 +43,32 @@ async function saveThumb(thumbData) {
         Body: thumbData.Body,
         Tagging: `_thumbnail=true`
     }
-    const thumb = s3.putObject(params).promise()
+    const thumb = s3.upload(params).promise()
     return thumb;
 }
 
-exports.handler = async (event) => {
-    // TODO implement
-    console.log(event)
+
+async function callCompressor(blob, quality) {
+    const meta = await sharp(blob).metadata()
+    console.log('image metadata  --->>>>>', meta);
+
+    if (meta.format === 'jpeg') {
+        return createJpegThumb(blob, quality)
+    } else if (meta.format === 'png') {
+        return createPngThumb(blob, quality)
+    } else {
+        throw new Error('Compressor not set for encoding : ' + meta.format)
+    }
+}
+
+exports.main = async (event) => {
+    // console.log(event)
 
     try {
         /* code */
-        const content = JSON.parse(event.Records[0].body.message)
+        const body = JSON.parse(event.Records[0].body)
+        // console.log(body);
+        const content = JSON.parse(body.Message)
         console.info(content)
 
         const { s3Data } = content
@@ -52,16 +83,24 @@ exports.handler = async (event) => {
 
         const imgBlob = getFile.Body
 
-        const thumb = await createSharpThumb(imgBlob)
+        const ext = path.extname(Key)
+        console.log({ ext })
+
+        const th = await callCompressor(imgBlob, 70)
+
+        console.log(th);
 
         const thumbData = {
             Bucket,
-            Key: `${Key}_thumb` + path.extname(Key),
-            Body: thumb,
+            Key: Key.replace(ext, '') + `_thumb` + ext,
+            Body: th.data,
         }
+
         const s3Thumb = await saveThumb(thumbData)
 
+        // const webpThumb = await saveThumb(thumbData2)
         console.log(s3Thumb)
+        // console.log(webpThumb)
         console.log('----------   THumbnail created successfully  -----------')
 
         const response = {
