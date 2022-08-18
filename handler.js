@@ -92,7 +92,7 @@ exports.main = async (event) => {
 
         const thumbData = {
             Bucket,
-            Key: Key.replace(ext, '') + `_thumb` + ext,
+            Key: Key.replace('input/images', 'Defaults'),
             Body: th.data,
         }
 
