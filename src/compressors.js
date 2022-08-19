@@ -1,7 +1,7 @@
 const sharp = require('sharp');
 
-export async function createJpegThumb(blob, quality) {
-    console.log('jpeg thumb creator called');
+async function createJpegThumb(blob, quality) {
+    console.log('jpeg compressor called');
     const img = await sharp(blob)
         // .resize({ width: 512, height: 512 })
         .jpeg({ progressive: true, quality: quality, mozjpeg: true })
@@ -9,7 +9,8 @@ export async function createJpegThumb(blob, quality) {
     return img
 }
 
-export async function createWebpThumb(blob) {
+async function createWebpThumb(blob) {
+    console.log('webp compressor called');
     const img = await sharp(blob, { animated: true })
         // .resize({ width: 512, height: 512 })
         .webp({ lossless: true })
@@ -17,9 +18,15 @@ export async function createWebpThumb(blob) {
     return img
 }
 
-export async function createPngThumb(blob, quality) {
-    console.log('PNG thumb creator called');
+async function createPngThumb(blob, quality) {
+    console.log('PNG compressor called');
     const thumb = await sharp(blob).withMetadata()
         .png({ quality: quality, compressionLevel: 9, force: false, effort: 10 }).toBuffer({ resolveWithObject: true })
     return thumb;
+}
+
+module.exports = {
+    createJpegThumb,
+    createWebpThumb,
+    createPngThumb
 }
