@@ -7,10 +7,10 @@ aws.config.update({
     }
 })
 
-export const s3 = new aws.S3()
+const s3 = new aws.S3()
 
 
-export async function saveThumb(thumbData) {
+async function saveThumb(thumbData) {
     const params = {
         Bucket: thumbData.Bucket,
         Key: thumbData.Key,
@@ -20,3 +20,5 @@ export async function saveThumb(thumbData) {
     const thumb = s3.upload(params).promise()
     return thumb;
 }
+
+module.exports = { s3, saveThumb }
