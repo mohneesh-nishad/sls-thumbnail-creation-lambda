@@ -42,7 +42,7 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-east-1:845847047647:dev-xana-resizeImages
-
+    timeout: 20
     layers:
       - { Ref: CommonLibs14LambdaLayer }
     environment:
