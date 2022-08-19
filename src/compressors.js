@@ -20,8 +20,8 @@ async function createWebpThumb(blob) {
 
 async function createPngThumb(blob, quality) {
     console.log('PNG compressor called');
-    const thumb = await sharp(blob).withMetadata()
-        .png({ quality: quality, compressionLevel: 9, force: false, effort: 10 }).toBuffer({ resolveWithObject: true })
+    const thumb = await sharp(blob)
+        .png({ progressive: true, quality: quality, compressionLevel: 9, effort: 10 }).toBuffer({ resolveWithObject: true })
     return thumb;
 }
 
