@@ -1,65 +1,7 @@
-const aws = require('aws-sdk');
-const sharp = require('sharp');
 const path = require('path');
+const { callCompressor } = require('./src/compressorHandlerr');
+const { s3, saveThumb } = require('./src/s3_handler');
 
-aws.config.update({
-    credentials: {
-        accessKeyId: process.env.ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.ACCESS_SECRET || ''
-    }
-})
-
-const s3 = new aws.S3()
-
-async function createJpegThumb(blob, quality) {
-    console.log('jpeg thumb creator called');
-    const img = await sharp(blob)
-        // .resize({ width: 512, height: 512 })
-        .jpeg({ progressive: true, quality: quality, mozjpeg: true })
-        .toBuffer({ resolveWithObject: true })
-    return img
-}
-
-async function createWebpThumb(blob) {
-    const img = await sharp(blob, { animated: true })
-        .resize({ width: 512, height: 512 })
-        .webp({ lossless: true })
-        .toBuffer()
-    return img
-}
-
-async function createPngThumb(blob, quality) {
-    console.log('PNG thumb creator called');
-    const thumb = await sharp(blob).withMetadata()
-        .png({ quality: quality, compressionLevel: 9, force: false, effort: 10 }).toBuffer({ resolveWithObject: true })
-    return thumb;
-}
-
-
-async function saveThumb(thumbData) {
-    const params = {
-        Bucket: thumbData.Bucket,
-        Key: thumbData.Key,
-        Body: thumbData.Body,
-        Tagging: `_thumbnail=true`
-    }
-    const thumb = s3.upload(params).promise()
-    return thumb;
-}
-
-
-async function callCompressor(blob, quality) {
-    const meta = await sharp(blob).metadata()
-    console.log('image metadata  --->>>>>', meta);
-
-    if (meta.format === 'jpeg') {
-        return createJpegThumb(blob, quality)
-    } else if (meta.format === 'png') {
-        return createPngThumb(blob, quality)
-    } else {
-        throw new Error('Compressor not set for encoding : ' + meta.format)
-    }
-}
 
 exports.main = async (event) => {
     // console.log(event)
@@ -88,27 +30,21 @@ exports.main = async (event) => {
 
         const th = await callCompressor(imgBlob, 70)
 
-        console.log(th);
-
+        console.log(`image's sharp blob after compression`, th);
+        console.log('compressed image size  ==>>>  ' + (th.info.size / (1000 * 1000)).toFixed(3) + '_MB')
         const thumbData = {
             Bucket,
             Key: Key.replace('input/images', 'Defaults'),
             Body: th.data,
         }
 
-        const s3Thumb = await saveThumb(thumbData)
+        const s3Obj = await saveThumb(thumbData)
 
-        // const webpThumb = await saveThumb(thumbData2)
-        console.log(s3Thumb)
-        // console.log(webpThumb)
-        console.log('----------   THumbnail created successfully  -----------')
+        console.log('bucket new object data \n', s3Obj)
 
-        const response = {
-            statusCode: 200,
-            body: {
-                event
-            },
-        };
+        console.log('----------  image compressed successfully  -----------')
+
+        const response = { statusCode: 200, body: { event } };
         return response;
     } catch (e) {
         console.error(e)

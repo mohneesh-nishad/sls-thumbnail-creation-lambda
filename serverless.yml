@@ -4,6 +4,7 @@ frameworkVersion: "3"
 provider:
   name: aws
   runtime: nodejs14.x
+  memorySize: 512
   stackName: xana-image-resize
   # you can overwrite defaults here
   stage: dev
@@ -35,6 +36,8 @@ package:
 
 functions:
   dev-xana-create-thumbnail:
+    name: dev-xana-image-compression
+    description: This lambda cretes compressed images for serving in XANA application
     handler: handler.main
     events:
       - sqs:
