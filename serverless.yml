@@ -1,11 +1,10 @@
-service: dev-xana-image-resize
+service: dev-xana-media-processing
 frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: nodejs14.x
   memorySize: 2048
-  stackName: xana-image-resize
+  stackName: xana-media-handler
   # you can overwrite defaults here
   stage: dev
   region: us-east-1
@@ -35,8 +34,9 @@ package:
   #    - include-me-dir/**
 
 functions:
-  dev-xana-create-thumbnail:
+  dev-xana-compress-image:
     name: dev-xana-image-compression
+    runtime: nodejs14.x
     description: This lambda cretes compressed images for serving in XANA application
     handler: handler.main
     events:
