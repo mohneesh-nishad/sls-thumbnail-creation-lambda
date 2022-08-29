@@ -3,7 +3,6 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  memorySize: 2048
   stackName: xana-media-handler
   # you can overwrite defaults here
   stage: dev
@@ -37,6 +36,7 @@ functions:
   dev-xana-compress-image:
     name: dev-xana-image-compression
     runtime: nodejs14.x
+    memorySize: 2048
     description: This lambda cretes compressed images for serving in XANA application
     handler: handler.main
     events:
