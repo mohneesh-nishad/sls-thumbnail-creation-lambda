@@ -4,18 +4,13 @@ frameworkVersion: "3"
 provider:
   name: aws
   stackName: xana-media-handler
-  # you can overwrite defaults here
   stage: dev
   region: us-east-1
-  # below line is for making apiEndpoints accept data as multipart
-  # apiGateway:
-  #   binaryMediaTypes:
-  #     - 'multipart/form-data'
+
 
   iam:
     role: arn:aws:iam::845847047647:role/mohneesh-transcoder-role-for-lambda
 
-  # you can define service wide environment variables here
   environment:
     #    variable1: value1
     ACCESS_KEY_ID: AKIA4J4DJVXPY3ZJFXNS

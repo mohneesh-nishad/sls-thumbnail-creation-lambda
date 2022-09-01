@@ -9,7 +9,7 @@ async function createJpegThumb(blob, quality) {
     return img
 }
 
-async function createWebpThumb(blob) {
+async function createWebpThumb(blob, quality) {
     console.log('webp compressor called');
     const img = await sharp(blob, { animated: true })
         // .resize({ width: 512, height: 512 })
